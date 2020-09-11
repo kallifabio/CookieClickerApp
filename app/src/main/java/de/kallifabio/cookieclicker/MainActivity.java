@@ -1,16 +1,20 @@
 package de.kallifabio.cookieclicker;
 
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,8 +28,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView tvPoints;
 
-    private int points = 0;
-    private int cps = 100;
+    private int points;
+    private int cps;
 
     private CookieCounter cookieCounter = new CookieCounter();
 
@@ -35,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int[] Images = {R.drawable.cursor};
     private String[] Names = {"Clicker"};
-    private String[] Description = {"+10 Cookies pro Sekunde"};
+    private String[] Description = {"+100 Cookies pro Sekunde"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +50,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ttf = Typeface.createFromAsset(getAssets(), "JandaManateeSolid.ttf");
         tvPoints.setTypeface(ttf);
         random = new Random();
+        open();
+    }
+
+    private void showCookieFragment() {
+        ViewGroup container = findViewById(R.id.container);
+        container.removeAllViews();
+        container.addView(getLayoutInflater().inflate(R.layout.activity_main, null));
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            showCookieFragment();
+            tvPoints = findViewById(R.id.tvPoints);
+            ttf = Typeface.createFromAsset(getAssets(), "JandaManateeSolid.ttf");
+            tvPoints.setTypeface(ttf);
+            random = new Random();
+            open();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        save();
+    }
+
+    private void cookieClick() {
+        points++;
+        tvPoints.setText(Integer.toString(points));
+        showToast(R.string.clicked);
     }
 
     @Override
@@ -59,13 +96,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
             view.startAnimation(animation);
+        } else if (view.getId() == R.id.btnShop) {
+            showShopFragment();
+            save();
         }
-    }
-
-    private void cookieClick() {
-        points++;
-        tvPoints.setText(Integer.toString(points));
-        showToast(R.string.clicked);
     }
 
     private void showToast(int stringID) {
@@ -76,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView textView = new TextView(this);
         textView.setText(stringID);
         textView.setTextSize(40f);
-        textView.setTextColor(Color.DKGRAY);
+        textView.setTextColor(Color.BLACK);
         textView.setTypeface(ttf);
 
         toast.setView(textView);
@@ -103,8 +137,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvPoints.setText(Integer.toString(points));
     }
 
+    private void save() {
+        SharedPreferences preferences = getSharedPreferences("GAME", 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("cps", cps);
+        editor.putInt("cookies", points);
+        editor.apply();
+    }
+
+    private void open() {
+        SharedPreferences preferences = getSharedPreferences("GAME", 0);
+        cps = preferences.getInt("cps", 0);
+        points = preferences.getInt("cookies", 0);
+    }
+
     private void showShopFragment() {
-        
+        ViewGroup container = findViewById(R.id.container);
+        ShopAdapter shopAdapter = new ShopAdapter();
+        container.removeAllViews();
+        container.addView(getLayoutInflater().inflate(R.layout.activity_shop, null));
+        ((ListView) findViewById(R.id.listShop)).setAdapter(shopAdapter);
+    }
+
+    private void updateCps(int i) {
+        cps += i;
+    }
+
+    private void updatePoints(int i) {
+        points -= i;
     }
 
     public class CookieCounter {
@@ -116,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    runOnUiThread(MainActivity.this::update);
+                    runOnUiThread(() -> update());
                 }
             }, 1000, 10);
         }
@@ -146,6 +206,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ((ImageView) convertView.findViewById(R.id.imgItem)).setImageResource(Images[position]);
             ((TextView) convertView.findViewById(R.id.tvName)).setText(Names[position]);
             ((TextView) convertView.findViewById(R.id.tvDescription)).setText(Description[position]);
+
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (getCount() == 1) {
+                        if (points >= 100) {
+                            updateCps(100);
+                            updatePoints(100);
+                            save();
+                        } else {
+                            (new AlertDialog.Builder(MainActivity.this)).setMessage("Du hast zu wenig Cookies").show();
+                        }
+                    }
+                }
+            });
+
             return convertView;
         }
     }

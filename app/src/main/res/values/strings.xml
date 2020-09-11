@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">CookieClicker</string>
+    <string name="app_name">Cookie Clicker</string>
     <string name="clicked">+1</string>
+    <string name="shop">Zum Shop</string>
 </resources>
