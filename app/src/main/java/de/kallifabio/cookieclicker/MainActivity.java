@@ -27,6 +27,7 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView tvPoints;
+    private TextView tvCps;
 
     private int points;
     private int cps;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvPoints = findViewById(R.id.tvPoints);
         ttf = Typeface.createFromAsset(getAssets(), "JandaManateeSolid.ttf");
         tvPoints.setTypeface(ttf);
+        tvCps = findViewById(R.id.tvCps);
+        tvCps.setTypeface(ttf);
         random = new Random();
         open();
     }
@@ -66,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tvPoints = findViewById(R.id.tvPoints);
             ttf = Typeface.createFromAsset(getAssets(), "JandaManateeSolid.ttf");
             tvPoints.setTypeface(ttf);
+            tvCps = findViewById(R.id.tvCps);
+            tvCps.setTypeface(ttf);
             random = new Random();
             open();
             return true;
@@ -135,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void update() {
         points += cps / 100;
         tvPoints.setText(Integer.toString(points));
+        tvCps.setText(Integer.toString(cps) + " CPS");
     }
 
     private void save() {

@@ -8,8 +8,7 @@
         android:layout_width="79dp"
         android:layout_height="73dp"
         android:layout_x="26dp"
-        android:layout_y="19dp"
-        android:background="@mipmap/ic_launcher" />
+        android:layout_y="19dp" />
 
     <TextView
         android:id="@+id/tvName"
